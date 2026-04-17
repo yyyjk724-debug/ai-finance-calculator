@@ -90,3 +90,17 @@ function calculateGoal() {
         alert("목표 금액과 기간을 입력해주세요.");
     }
 }
+
+// 입력창 실시간 천 단위 콤마 함수
+function formatNumber(node) {
+    // 콤마 제거 후 숫자만 추출
+    let value = node.value.replace(/[^0-9]/g, "");
+    // 천 단위 콤마 추가
+    node.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// 계산 시 콤마를 제거하고 숫자로 변환하는 도우미 함수
+function getRawNumber(id) {
+    const val = document.getElementById(id).value;
+    return parseFloat(val.replace(/,/g, "")) || 0;
+}
