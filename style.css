@@ -11,3 +11,19 @@ button:hover { background: #1557b0; }
 .info-section { margin-top: 40px; padding: 20px; background: #fff; border-top: 1px solid #eee; font-size: 15px; line-height: 1.6; }
 .info-section h3 { color: #222; }
 .ad-slot { margin-top: 30px; border: 1px dashed #ccc; padding: 40px; text-align: center; color: #999; border-radius: 8px; }
+/* 결과 텍스트 강조 스타일 */
+.highlight {
+    color: #5d5dff !important;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.result-text {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9ff;
+    border-radius: 8px;
+    text-align: center;
+    min-height: 1.5em;
+    color: #333;
+}
