@@ -1,7 +1,4 @@
-/**
- * 1. 대출 계산기 (Loan Calculator)
- * 원리금 균등 상환 방식 공식 적용
- */
+// 1. 대출 계산기 (Loan Calculator)
 function calculateLoan() {
     const amount = parseFloat(document.getElementById('loanAmount').value);
     const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
@@ -11,7 +8,6 @@ function calculateLoan() {
         const x = Math.pow(1 + rate, term);
         const monthly = (amount * x * rate) / (x - 1);
         
-        // 정수 반올림 후 한국식 콤마 포맷팅 적용
         const formattedMonthly = Math.round(monthly).toLocaleString('ko-KR');
         
         document.getElementById('loanResult').innerHTML = 
@@ -21,10 +17,7 @@ function calculateLoan() {
     }
 }
 
-/**
- * 2. 복리 계산기 (Compound Interest)
- * 월 복리 및 월 적립액 합산 공식 적용
- */
+// 2. 복리 계산기 (Compound Interest)
 function calculateCompound() {
     const p = parseFloat(document.getElementById('principal').value);
     const pmt = parseFloat(document.getElementById('monthlyDeposit').value) || 0;
@@ -36,7 +29,6 @@ function calculateCompound() {
         if (r === 0) {
             futureValue = p + (pmt * n);
         } else {
-            // 초기 투자금 복리 + 매월 적립액 복리 합산 공식
             futureValue = p * Math.pow(1 + r, n) + pmt * ((Math.pow(1 + r, n) - 1) / r);
         }
 
