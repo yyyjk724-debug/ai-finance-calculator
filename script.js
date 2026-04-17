@@ -44,3 +44,16 @@ function calculateCompound() {
         alert("투자 원금, 수익률, 기간을 올바르게 입력해주세요.");
     }
 }
+
+.highlight {
+    color: #5d5dff; /* 강조하고 싶은 보라색 계열 */
+    font-size: 1.2rem;
+}
+
+.result-text {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9ff;
+    border-radius: 5px;
+    text-align: center;
+}
