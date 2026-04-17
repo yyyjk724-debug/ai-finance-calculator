@@ -12,19 +12,40 @@ function getRawNumber(id) {
     return parseFloat(val.replace(/,/g, "")) || 0;
 }
 
-// 1. 대출 계산기
 function calculateLoan() {
-    const amount = getRawNumber('loanAmount');
-    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
-    const term = parseFloat(document.getElementById('loanTerm').value) * 12;
+    const amount = getRawNumber('loanAmount'); // 콤마 제거 후 숫자 가져오기
+    const annualRate = parseFloat(document.getElementById('interestRate').value) / 100;
+    const monthlyRate = annualRate / 12;
+    const years = parseFloat(document.getElementById('loanTerm').value);
+    const months = years * 12;
+    const method = document.getElementById('repaymentMethod').value; // 상환 방식 가져오기
 
-    if (amount > 0 && rate > 0 && term > 0) {
-        const x = Math.pow(1 + rate, term);
-        const monthly = (amount * x * rate) / (x - 1);
-        const formatted = Math.round(monthly).toLocaleString('ko-KR');
-        document.getElementById('loanResult').innerHTML = `예상 월 상환액: <span class="highlight">${formatted} 원</span>`;
+    if (amount > 0 && annualRate > 0 && months > 0) {
+        let resultHtml = "";
+
+        if (method === "level") {
+            // 원리금 균등 상환 공식
+            const x = Math.pow(1 + monthlyRate, months);
+            const monthlyPayment = (amount * x * monthlyRate) / (x - 1);
+            const formatted = Math.round(monthlyPayment).toLocaleString('ko-KR');
+            resultHtml = `<strong>원리금 균등 상환</strong> - 예상 월 납입액: <span class="highlight">${formatted} 원</span>`;
+        } else {
+            // 원금 균등 상환 로직
+            const monthlyPrincipal = amount / months; // 매달 갚는 원금
+            const firstMonthInterest = amount * monthlyRate; // 첫 달 이자
+            const lastMonthInterest = (monthlyPrincipal) * monthlyRate; // 마지막 달 이자
+            
+            const firstPayment = Math.round(monthlyPrincipal + firstMonthInterest).toLocaleString('ko-KR');
+            const lastPayment = Math.round(monthlyPrincipal + lastMonthInterest).toLocaleString('ko-KR');
+            
+            resultHtml = `<strong>원금 균등 상환</strong><br>1회차 납입액: <span class="highlight">${firstPayment} 원</span><br>` +
+                         `마지막 회차 납입액: <span class="highlight">${lastPayment} 원</span><br>` +
+                         `<small style="color:#888;">*원금이 균등하게 상환되어 납입액이 매달 조금씩 줄어듭니다.</small>`;
+        }
+        
+        document.getElementById('loanResult').innerHTML = resultHtml;
     } else {
-        alert("값을 정확히 입력해주세요.");
+        alert("대출 정보를 정확히 입력해주세요.");
     }
 }
 
