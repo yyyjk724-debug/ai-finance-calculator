@@ -1,27 +1,32 @@
-async function runAI() {
-    const assets = parseFloat(document.getElementById('assets').value);
-    const savings = parseFloat(document.getElementById('savings').value);
-    
-    if(!assets || !savings) { alert("숫자를 입력해주세요!"); return; }
+// 1. 대출 계산기 (Loan Calculator) 로직
+function calculateLoan() {
+    const amount = parseFloat(document.getElementById('loanAmount').value);
+    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
+    const term = parseFloat(document.getElementById('loanTerm').value) * 12;
 
-    document.getElementById('result').innerText = "AI가 계산 중...";
+    if (amount && rate && term) {
+        const x = Math.pow(1 + rate, term);
+        const monthly = (amount * x * rate) / (x - 1);
+        document.getElementById('loanResult').innerHTML = 
+            `월 상환액: <strong>${monthly.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong>`;
+    } else {
+        alert("모든 값을 입력해주세요.");
+    }
+}
 
-    // 간단한 AI 모델 만들기 (선형 회귀)
-    const model = tf.sequential();
-    model.add(tf.layers.dense({units: 1, inputShape: [1]}));
-    model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
+// 2. 복리 계산기 (Compound Interest) 로직
+function calculateCompound() {
+    const p = parseFloat(document.getElementById('principal').value);
+    const pmt = parseFloat(document.getElementById('monthlyDeposit').value);
+    const r = parseFloat(document.getElementById('growthRate').value) / 100 / 12;
+    const n = parseFloat(document.getElementById('years').value) * 12;
 
-    // 가상의 학습 데이터 (1개월 후 ~ 6개월 후 자산 추이)
-    const xs = tf.tensor1d([1, 2, 3, 4, 5, 6]);
-    const ys = tf.tensor1d([assets + savings, assets + savings*2, assets + savings*3, assets + savings*4, assets + savings*5, assets + savings*6]);
-
-    // 브라우저에서 즉석 학습
-    await model.fit(xs, ys, {epochs: 100});
-
-    // 12개월 뒤 자산 예측
-    const prediction = model.predict(tf.tensor1d([12]));
-    const resultValue = await prediction.data();
-
-    document.getElementById('result').innerText = 
-        `AI 예측 1년 뒤 자산: 약 ${Math.round(resultValue[0]).toLocaleString()}만원`;
+    if (p >= 0 && r >= 0 && n > 0) {
+        // 복리 공식 적용
+        const futureValue = p * Math.pow(1 + r, n) + pmt * ((Math.pow(1 + r, n) - 1) / r);
+        document.getElementById('compoundResult').innerHTML = 
+            `최종 자산: <strong>${Math.round(futureValue).toLocaleString()}</strong>`;
+    } else {
+        alert("올바른 값을 입력해주세요.");
+    }
 }
