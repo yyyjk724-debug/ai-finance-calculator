@@ -13,39 +13,63 @@ function getRawNumber(id) {
 }
 
 function calculateLoan() {
-    const amount = getRawNumber('loanAmount'); // 콤마 제거 후 숫자 가져오기
+    const amount = getRawNumber('loanAmount');
     const annualRate = parseFloat(document.getElementById('interestRate').value) / 100;
     const monthlyRate = annualRate / 12;
     const years = parseFloat(document.getElementById('loanTerm').value);
     const months = years * 12;
-    const method = document.getElementById('repaymentMethod').value; // 상환 방식 가져오기
+    const method = document.getElementById('repaymentMethod').value;
 
     if (amount > 0 && annualRate > 0 && months > 0) {
-        let resultHtml = "";
+        // 1. 기존 요약 결과 출력 (생략 - 이전 코드와 동일)
+        // ... (이전 코드의 resultHtml 생성 및 출력 부분) ...
 
-        if (method === "level") {
-            // 원리금 균등 상환 공식
-            const x = Math.pow(1 + monthlyRate, months);
-            const monthlyPayment = (amount * x * monthlyRate) / (x - 1);
-            const formatted = Math.round(monthlyPayment).toLocaleString('ko-KR');
-            resultHtml = `<strong>원리금 균등 상환</strong> - 예상 월 납입액: <span class="highlight">${formatted} 원</span>`;
-        } else {
-            // 원금 균등 상환 로직
-            const monthlyPrincipal = amount / months; // 매달 갚는 원금
-            const firstMonthInterest = amount * monthlyRate; // 첫 달 이자
-            const lastMonthInterest = (monthlyPrincipal) * monthlyRate; // 마지막 달 이자
-            
-            const firstPayment = Math.round(monthlyPrincipal + firstMonthInterest).toLocaleString('ko-KR');
-            const lastPayment = Math.round(monthlyPrincipal + lastMonthInterest).toLocaleString('ko-KR');
-            
-            resultHtml = `<strong>원금 균등 상환</strong><br>1회차 납입액: <span class="highlight">${firstPayment} 원</span><br>` +
-                         `마지막 회차 납입액: <span class="highlight">${lastPayment} 원</span><br>` +
-                         `<small style="color:#888;">*원금이 균등하게 상환되어 납입액이 매달 조금씩 줄어듭니다.</small>`;
+        // 2. 상환 스케줄표 생성 시작
+        document.getElementById('scheduleContainer').style.display = 'block';
+        let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:right; border:1px solid #ddd;">
+            <tr style="background:#f8f9ff;">
+                <th style="padding:8px; border:1px solid #ddd; text-align:center;">회차</th>
+                <th style="padding:8px; border:1px solid #ddd;">상환금(원금+이자)</th>
+                <th style="padding:8px; border:1px solid #ddd;">잔액</th>
+            </tr>`;
+
+        let balance = amount;
+        const displayMonths = Math.min(months, 6); // 무료 버전은 6개월치만 노출
+
+        for (let i = 1; i <= months; i++) {
+            let interest = balance * monthlyRate;
+            let principal = 0;
+            let payment = 0;
+
+            if (method === "level") {
+                const x = Math.pow(1 + monthlyRate, months);
+                payment = (amount * x * monthlyRate) / (x - 1);
+                principal = payment - interest;
+            } else {
+                principal = amount / months;
+                payment = principal + interest;
+            }
+
+            balance -= principal;
+
+            // 6회차까지만 표에 추가
+            if (i <= displayMonths) {
+                tableHtml += `<tr>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:center; background:#fafafa;">${i}회</td>
+                    <td style="padding:8px; border:1px solid #ddd;">
+                        <strong>${Math.round(payment).toLocaleString()}원</strong><br>
+                        <small style="color:#888;">(원:${Math.round(principal).toLocaleString()} / 이:${Math.round(interest).toLocaleString()})</small>
+                    </td>
+                    <td style="padding:8px; border:1px solid #ddd;">${Math.max(0, Math.round(balance)).toLocaleString()}원</td>
+                </tr>`;
+            }
         }
+
+        tableHtml += `</table>`;
+        document.getElementById('amortizationTable').innerHTML = tableHtml;
         
-        document.getElementById('loanResult').innerHTML = resultHtml;
     } else {
-        alert("대출 정보를 정확히 입력해주세요.");
+        alert("정보를 정확히 입력해주세요.");
     }
 }
 
