@@ -1,16 +1,18 @@
 let myChart = null;
 
+// 실시간 콤마 포맷팅
 function formatNumber(node) {
     let value = node.value.replace(/[^0-9]/g, "");
     node.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+// 콤마 제거 후 숫자 변환
 function getRawNumber(id) {
     const val = document.getElementById(id).value;
     return parseFloat(val.replace(/,/g, "")) || 0;
 }
 
-// 대출 계산기 로직
+// 1. 대출 계산기 로직
 function calculateLoan() {
     const amount = getRawNumber('loanAmount');
     const annualRate = parseFloat(document.getElementById('interestRate').value) / 100;
@@ -23,7 +25,9 @@ function calculateLoan() {
         document.getElementById('scheduleContainer').style.display = 'block';
         let balance = amount;
         let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem; border:1px solid #ddd;">
-            <tr style="background:#f8f9ff;"><th>회차</th><th>상환액</th><th>잔액</th></tr>`;
+            <tr style="background:#f8f9ff;"><th>회차</th><th>납입금</th><th>잔액</th></tr>`;
+
+        let firstPay = 0;
 
         for (let i = 1; i <= months; i++) {
             let interest = balance * monthlyRate;
@@ -39,17 +43,19 @@ function calculateLoan() {
                 payment = principal + interest;
             }
             balance -= principal;
+            if (i === 1) firstPay = payment;
+
             if (i <= 6) {
                 tableHtml += `<tr><td style="text-align:center;">${i}회</td><td style="text-align:right; padding:5px;">${Math.round(payment).toLocaleString()}원</td><td style="text-align:right; padding:5px;">${Math.max(0, Math.round(balance)).toLocaleString()}원</td></tr>`;
             }
         }
         tableHtml += `</table>`;
         document.getElementById('amortizationTable').innerHTML = tableHtml;
-        document.getElementById('loanResult').innerHTML = `첫 회차 월 납입액: <span class="highlight">${Math.round(amount/months + amount*(annualRate/12)).toLocaleString()}원 (원금방식 기준 예시)</span>`;
+        document.getElementById('loanResult').innerHTML = `첫 회차 월 상환액: <span class="highlight">${Math.round(firstPay).toLocaleString()}원</span>`;
     } else { alert("정보를 정확히 입력해주세요."); }
 }
 
-// 복리 계산기 PRO 로직
+// 2. 복리 계산기 PRO 로직
 function calculateCompound() {
     const p = getRawNumber('principal');
     const pmt = getRawNumber('monthlyDeposit');
@@ -82,7 +88,7 @@ function calculateCompound() {
         const finalAmount = balance - tax;
 
         document.getElementById('compoundResult').innerHTML = `
-            세전 자산: ${Math.round(balance).toLocaleString()}원<br>
+            세전 자산: ${Math.round(balance).toLocaleString()}원 / 
             수익 세금: -${Math.round(tax).toLocaleString()}원<br>
             <strong>최종 세후 수령액: <span class="highlight">${Math.round(finalAmount).toLocaleString()}원</span></strong>
         `;
@@ -103,7 +109,7 @@ function calculateCompound() {
     } else { alert("정보를 정확히 입력해주세요."); }
 }
 
-// AI Goal Path 로직
+// 3. 목표 역산 로직
 function calculateGoal() {
     const target = getRawNumber('targetAmount');
     const years = parseFloat(document.getElementById('goalYears').value);
