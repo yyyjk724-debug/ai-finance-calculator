@@ -1,17 +1,18 @@
-let myChart = null;
+let myChart = null; // 복리 차트 객체
 
-// [추가] 실시간 콤마 포맷팅 함수
+// 실시간 콤마 포맷팅 함수
 function formatNumber(node) {
     let value = node.value.replace(/[^0-9]/g, "");
     node.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// [추가] 계산을 위해 콤마를 제거하고 숫자로 변환하는 함수
+// 콤마 제거 후 숫자로 변환
 function getRawNumber(id) {
     const val = document.getElementById(id).value;
     return parseFloat(val.replace(/,/g, "")) || 0;
 }
 
+// 1. 대출 계산기 및 상환 스케줄
 function calculateLoan() {
     const amount = getRawNumber('loanAmount');
     const annualRate = parseFloat(document.getElementById('interestRate').value) / 100;
@@ -21,20 +22,17 @@ function calculateLoan() {
     const method = document.getElementById('repaymentMethod').value;
 
     if (amount > 0 && annualRate > 0 && months > 0) {
-        // 1. 기존 요약 결과 출력 (생략 - 이전 코드와 동일)
-        // ... (이전 코드의 resultHtml 생성 및 출력 부분) ...
-
-        // 2. 상환 스케줄표 생성 시작
         document.getElementById('scheduleContainer').style.display = 'block';
+        
         let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:right; border:1px solid #ddd;">
             <tr style="background:#f8f9ff;">
                 <th style="padding:8px; border:1px solid #ddd; text-align:center;">회차</th>
-                <th style="padding:8px; border:1px solid #ddd;">상환금(원금+이자)</th>
+                <th style="padding:8px; border:1px solid #ddd;">납입금(원금+이자)</th>
                 <th style="padding:8px; border:1px solid #ddd;">잔액</th>
             </tr>`;
 
         let balance = amount;
-        const displayMonths = Math.min(months, 6); // 무료 버전은 6개월치만 노출
+        let totalMonthlyPayment = 0;
 
         for (let i = 1; i <= months; i++) {
             let interest = balance * monthlyRate;
@@ -51,29 +49,29 @@ function calculateLoan() {
             }
 
             balance -= principal;
+            if (i === 1) totalMonthlyPayment = payment; // 요약용 첫달 기록
 
-            // 6회차까지만 표에 추가
-            if (i <= displayMonths) {
+            // 6회차까지만 무료 노출 (SaaS 전략)
+            if (i <= 6) {
                 tableHtml += `<tr>
-                    <td style="padding:8px; border:1px solid #ddd; text-align:center; background:#fafafa;">${i}회</td>
+                    <td style="padding:8px; border:1px solid #ddd; text-align:center;">${i}회</td>
                     <td style="padding:8px; border:1px solid #ddd;">
                         <strong>${Math.round(payment).toLocaleString()}원</strong><br>
-                        <small style="color:#888;">(원:${Math.round(principal).toLocaleString()} / 이:${Math.round(interest).toLocaleString()})</small>
+                        <small style="color:#888;">(원:${Math.round(principal).toLocaleString()}/이:${Math.round(interest).toLocaleString()})</small>
                     </td>
                     <td style="padding:8px; border:1px solid #ddd;">${Math.max(0, Math.round(balance)).toLocaleString()}원</td>
                 </tr>`;
             }
         }
-
         tableHtml += `</table>`;
         document.getElementById('amortizationTable').innerHTML = tableHtml;
-        
+        document.getElementById('loanResult').innerHTML = `첫 회차 월 납입금: <span class="highlight">${Math.round(totalMonthlyPayment).toLocaleString()}원</span>`;
     } else {
         alert("정보를 정확히 입력해주세요.");
     }
 }
 
-// 2. 복리 계산기 + 차트
+// 2. 복리 계산기 및 차트 출력
 function calculateCompound() {
     const p = getRawNumber('principal');
     const pmt = getRawNumber('monthlyDeposit');
@@ -93,17 +91,21 @@ function calculateCompound() {
             }
         }
 
-        const formattedValue = Math.round(currentBalance).toLocaleString('ko-KR');
-        document.getElementById('compoundResult').innerHTML = `최종 예상 자산: <span class="highlight">${formattedValue} 원</span>`;
+        document.getElementById('compoundResult').innerHTML = `최종 예상 자산: <span class="highlight">${Math.round(currentBalance).toLocaleString()} 원</span>`;
 
-        const ctx = document.getElementById('growthChart').getContext('2d');
-        if (myChart) myChart.destroy();
+        // 차트 그리기 시작
+        const canvas = document.getElementById('growthChart');
+        if (!canvas) return; // 캔버스가 없으면 종료
+        
+        const ctx = canvas.getContext('2d');
+        if (myChart) myChart.destroy(); // 기존 차트 초기화
+
         myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: '자산 성장 추이',
+                    label: '자산 성장 곡선',
                     data: data,
                     borderColor: '#5d5dff',
                     backgroundColor: 'rgba(93, 93, 255, 0.1)',
@@ -114,15 +116,17 @@ function calculateCompound() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { ticks: { callback: v => v.toLocaleString() + '원' } } }
+                scales: {
+                    y: { ticks: { callback: v => v.toLocaleString() + '원' } }
+                }
             }
         });
     } else {
-        alert("값을 정확히 입력해주세요.");
+        alert("복리 정보를 입력해주세요.");
     }
 }
 
-// 3. 목표 자산 역산기
+// 3. 목표 자산 역산
 function calculateGoal() {
     const target = getRawNumber('targetAmount');
     const years = parseFloat(document.getElementById('goalYears').value);
@@ -132,8 +136,7 @@ function calculateGoal() {
 
     if (target > 0 && n > 0) {
         let monthlyNeed = (r === 0) ? target / n : target / (((Math.pow(1 + r, n)) - 1) / r);
-        const formatted = Math.round(monthlyNeed).toLocaleString('ko-KR');
-        document.getElementById('goalResult').innerHTML = `매달 <span class="highlight">${formatted} 원</span>을 저축해야 합니다. (수익률 ${annualRate}% 기준)`;
+        document.getElementById('goalResult').innerHTML = `목표 달성을 위해 매달 <span class="highlight">${Math.round(monthlyNeed).toLocaleString()} 원</span> 저축 필요`;
     } else {
         alert("목표 금액과 기간을 입력해주세요.");
     }
