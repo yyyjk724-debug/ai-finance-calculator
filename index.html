@@ -61,7 +61,18 @@
             <button onclick="calculateLoan()" style="font-weight: bold; font-size: 1.1rem;">Calculate monthly repayment(월 상환액 계산하기)</button>
             
             <div id="loanResult" class="result-text"></div>
-        </section>
+
+<div id="scheduleContainer" style="margin-top: 20px; display: none;">
+    <h4 style="text-align: center; color: #2c2c54;">상환 스케줄 (일부)</h4>
+    <div id="amortizationTable" style="overflow-x: auto;"></div>
+    
+    <div id="premiumUpsell" style="text-align: center; padding: 20px; background: #f0f0ff; border-radius: 8px; margin-top: 10px;">
+        <p style="font-size: 0.9rem; color: #555;">전체 상환 일정과 엑셀 다운로드는 프리미엄 전용 기능입니다.</p>
+        <button onclick="location.href='pricing.html'" style="background: #5d5dff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+            전체 일정 확인 및 엑셀 받기
+        </button>
+    </div>
+</div>
 
         <hr>
 
