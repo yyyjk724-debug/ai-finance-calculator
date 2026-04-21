@@ -120,6 +120,37 @@
             <div id="goalResult" class="result-text"></div>
         </section>
 
+        <hr>
+
+<section class="calc-section">
+    <h2>Early Repayment Fee (중도상환수수료 계산기)</h2>
+    <div class="input-group">
+        <label>중도상환 금액</label>
+        <input type="text" id="prepayAmount" oninput="formatNumber(this)" placeholder="예: 50,000,000">
+    </div>
+    <div class="input-group">
+        <label>중도상환수수료율 (%)</label>
+        <input type="number" id="prepayFeeRate" step="0.1" placeholder="예: 1.2">
+    </div>
+    <div class="input-group">
+        <label>대출 전체 기간 (년)</label>
+        <input type="number" id="totalLoanTerm" placeholder="예: 3">
+    </div>
+    <div class="input-group">
+        <label>남은 기간 (일)</label>
+        <input type="number" id="remainingDays" placeholder="예: 450">
+    </div>
+    
+    <button onclick="calculatePrepayFee()" style="font-weight: bold;">중도상환수수료 계산하기</button>
+    
+    <div id="prepayResult" class="result-text"></div>
+    
+    <div style="font-size: 0.85rem; color: #666; margin-top: 10px; padding: 10px; background: #fdfdfd; border-left: 3px solid #ddd;">
+        * 일반적인 계산 공식: <strong>중도상환금액 × 수수료율 × (잔존기간 / 대출기간)</strong><br>
+        * 금융사마다 면제 조건(예: 대출 후 3년 경과 등)이 다를 수 있으니 확인이 필요합니다.
+    </div>
+</section>
+
         <section class="finance-guide" style="max-width: 800px; margin: 50px auto; padding: 20px; line-height: 1.8; color: #444;">
             <h2 style="color: #2c2c54; border-bottom: 2px solid #5d5dff; padding-bottom: 10px;">복리의 마법과 재무 설계의 핵심</h2>
             <h3 style="margin-top: 30px; color: #333;">1. 왜 지금 당장 자산 관리를 시작해야 하는가?</h3>
